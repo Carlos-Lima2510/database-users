@@ -1,5 +1,5 @@
 .vault_pass
 contraseñas_generadas/
-
+.env
 *.log
 .DS_Store
