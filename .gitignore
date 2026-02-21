@@ -1,0 +1,5 @@
+.vault_pass
+contraseñas_generadas/
+
+*.log
+.DS_Store

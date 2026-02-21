@@ -1,0 +1,57 @@
+---
+- name: Centralizar y Sincronizar usuarios de MySQL
+  hosts: mysql_instances
+  gather_facts: false
+
+  vars_files:
+    - secrets.yaml
+
+  tasks:
+    - name: "Crear usuarios para Developer"
+      community.mysql.mysql_user:
+        login_host: "{{ ansible_host }}"
+        login_port: "{{ mysql_port }}"
+        login_user: "{{ mysql_user }}"
+        login_password: "{{ vault_mysql_root_pass }}"
+        
+        name: "{{ item.nombre }}"
+        host: "%"
+        password: "{{ item.clave }}"
+        update_password: always
+        priv: "*.*:SELECT,INSERT,UPDATE,DELETE,FILE,CREATE,ALTER,INDEX,SHOW VIEW,CREATE ROUTINE,ALTER ROUTINE,EXECUTE,CREATE VIEW,EVENT,TRIGGER,SHOW DATABASES,REFERENCES"
+        state: present
+      loop: "{{ usuarios_developer_base_de_datos }}"
+      no_log: true
+    
+    - name: "Crear usuarios para Maintainer"
+      community.mysql.mysql_user:
+        login_host: "{{ ansible_host }}"
+        login_port: "{{ mysql_port }}"
+        login_user: "{{ mysql_user }}"
+        login_password: "{{ vault_mysql_root_pass }}"
+        
+        name: "{{ item.nombre }}"
+        host: "%"
+        password: "{{ item.clave }}"
+        update_password: always
+        priv: "*.*:ALL"
+        state: present
+      loop: "{{ usuarios_maintainer_base_de_datos }}"
+      no_log: true
+
+    - name: "Crear usuarios para Admin"
+      community.mysql.mysql_user:
+        login_host: "{{ ansible_host }}"
+        login_port: "{{ mysql_port }}"
+        login_user: "{{ mysql_user }}"
+        login_password: "{{ vault_mysql_root_pass }}"
+        
+        name: "{{ item.nombre }}"
+        host: "%"
+        password: "{{ item.clave }}"
+        update_password: always
+        priv: "*.*:ALL,GRANT"
+        state: present
+      loop: "{{ usuarios_admin_base_de_datos }}"
+      no_log: true
+

@@ -1,0 +1,35 @@
+services:
+  mysql-principal:
+    image: mysql:8.4
+    container_name: mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: f3n1x
+    command: --mysql-native-password=ON
+    ports:
+      - "3306:3306"
+
+  mysql-secundario:
+    image: mysql:8.4
+    container_name: mysql_secundario_container
+    environment:
+      MYSQL_ROOT_PASSWORD: f3n1x
+    command: --mysql-native-password=ON
+    ports:
+      - "3307:3306"
+  
+  mysql-terciario:
+    image: mysql:8.4
+    container_name: mysql_terciario_container
+    environment:
+      MYSQL_ROOT_PASSWORD: f3n1x
+    command: --mysql-native-password=ON
+    ports:
+      - "3308:3306"
+  
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin_container
+    environment:
+      PMA_HOSTS: mysql-principal, mysql-secundario, mysql-terciario
+    ports:
+      - "8080:80"
