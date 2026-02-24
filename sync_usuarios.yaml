@@ -55,3 +55,19 @@
       loop: "{{ usuarios_admin_base_de_datos }}"
       no_log: true
 
+    - name: "Crear usuarios para despliegue"
+      community.mysql.mysql_user:
+        login_host: "{{ ansible_host }}"
+        login_port: "{{ mysql_port }}"
+        login_user: "{{ mysql_user }}"
+        login_password: "{{ vault_mysql_root_pass }}"
+
+        name: "{{ item.nombre }}"
+        host: "%"
+        password: "{{ item.clave }}"
+        update_password: always
+        priv: "*.*:ALL,GRANT"
+        state: present
+      loop: "{{ usuarios_despliegues_base_de_datos }}"
+      no_log: true
+
