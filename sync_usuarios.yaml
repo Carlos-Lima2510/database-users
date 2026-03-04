@@ -54,3 +54,27 @@
         state: present
       loop: "{{ usuarios_admin_base_de_datos }}"
       no_log: true
+
+    - name: "Crear usuarios de despliegue con permisos por base de datos"
+      community.mysql.mysql_user:
+        login_host: "{{ ansible_host }}"
+        login_port: "{{ mysql_port }}"
+        login_user: "{{ mysql_user }}"
+        login_password: "{{ vault_mysql_root_pass }}"
+
+        name: "{{ item.nombre }}"
+        host: "%"
+        password: "{{ item.clave }}"
+        update_password: always
+
+        priv: >-
+          {% set permisos = 'SELECT,INSERT,UPDATE,DELETE,CREATE,INDEX,ALTER,CREATE TEMPORARY TABLES,CREATE VIEW,EVENT,TRIGGER,SHOW VIEW,CREATE ROUTINE,ALTER ROUTINE,EXECUTE' %}
+          {% set lista_privs = [] %}
+          {% for db_name in item.bases_datos %}
+            {% set _ = lista_privs.append(db_name ~ '.*:' ~ permisos) %}
+          {% endfor %}
+          {{ lista_privs | join('/') }}
+
+        state: present
+      loop: "{{ usuarios_despliegue_base_de_datos }}"
+      no_log: true
