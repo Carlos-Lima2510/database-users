@@ -23,21 +23,21 @@
       loop: "{{ usuarios_developer_base_de_datos }}"
       no_log: true
 
- - name: "Crear usuarios para Developer sin Delete"
-      community.mysql.mysql_user:
-        login_host: "{{ ansible_host }}"
-        login_port: "{{ mysql_port }}"
-        login_user: "{{ mysql_user }}"
-        login_password: "{{ vault_mysql_root_pass }}"
+     - name: "Crear usuarios para Developer sin Delete"
+        community.mysql.mysql_user:
+          login_host: "{{ ansible_host }}"
+          login_port: "{{ mysql_port }}"
+          login_user: "{{ mysql_user }}"
+          login_password: "{{ vault_mysql_root_pass }}"
 
-        name: "{{ item.nombre }}"
-        host: "%"
-        password: "{{ item.clave }}"
-        update_password: always
-        priv: "*.*:SELECT,INSERT,UPDATE,,FILE,CREATE,ALTER,INDEX,SHOW VIEW,CREATE ROUTINE,ALTER ROUTINE,EXECU>
-        state: present
-      loop: "{{ usuarios_sinDelete_base_de_datos }}"
-      no_log: true
+          name: "{{ item.nombre }}"
+          host: "%"
+          password: "{{ item.clave }}"
+          update_password: always
+          priv: "*.*:SELECT,INSERT,UPDATE,,FILE,CREATE,ALTER,INDEX,SHOW VIEW,CREATE ROUTINE,ALTER ROUTINE,EXECU>
+          state: present
+        loop: "{{ usuarios_sinDelete_base_de_datos }}"
+          no_log: true
     
     - name: "Crear usuarios para Maintainer"
       community.mysql.mysql_user:
