@@ -24,33 +24,50 @@
       no_log: true
 
     - name: "Crear usuarios para Developer sin Delete"
-      community.mysql.mysql_user:
-        login_host: "{{ ansible_host }}"
-        login_port: "{{ mysql_port }}"
-        login_user: "{{ mysql_user }}"
-        login_password: "{{ vault_mysql_root_pass }}"
-        name: "{{ item.nombre }}"
-        host: "%"
-        password: "{{ item.clave }}"
-        update_password: always
-        priv: >-
-          {% set permisos_globales = 'SELECT,INSERT,UPDATE,FILE,CREATE,ALTER,INDEX,SHOW VIEW,CREATE ROUTINE,ALTER ROUTINE,EXECUTE' %}
-          {% set permisos_tabla = 'SELECT,INSERT,UPDATE,DELETE' %}
-          {% set prefijos_por_host = {
-            'develop': 'nutrix_4_dev',
-            'sandbox': 'nutrix_4_dev_sandbox',
-            'training': 'nutrix_4_training',
-          } %}
-          {% set prefijo = prefijos_por_host.get(inventory_hostname, 'nutrix_4_dev') %}
-          {% set lista_privs = [] %}
-          {% set _ = lista_privs.append('*.*:' ~ permisos_globales) %}
-          {% set _ = lista_privs.append(prefijo ~ '_diets.diet_user:' ~ permisos_tabla) %}
-          {% set _ = lista_privs.append(prefijo ~ '_diets.diet_patient:' ~ permisos_tabla) %}
-          {% set _ = lista_privs.append(prefijo ~ '_consultations.consultables:' ~ permisos_tabla) %}
-          {{ lista_privs | join('/') }}
-        state: present
-      loop: "{{ usuarios_sinDelete_base_de_datos }}"
-      no_log: true
+      vars:
+        prefijos_por_host:
+          develop: nutrix_4_dev
+          sandbox: nutrix_4_dev_sandbox
+          training: nutrix_4_training
+          training2: nutrix_4_training
+        prefijo_nutrix: "{{ prefijos_por_host.get(inventory_hostname, 'nutrix_4_dev') }}"
+      block:
+        - name: "Obtener tablas objetivo existentes para permisos DELETE"
+          community.mysql.mysql_query:
+            login_host: "{{ ansible_host }}"
+            login_port: "{{ mysql_port }}"
+            login_user: "{{ mysql_user }}"
+            login_password: "{{ vault_mysql_root_pass }}"
+            query: >-
+              SELECT TABLE_SCHEMA AS table_schema, TABLE_NAME AS table_name
+              FROM information_schema.TABLES
+              WHERE (TABLE_SCHEMA = '{{ prefijo_nutrix }}_diets' AND TABLE_NAME IN ('diet_user', 'diet_patient'))
+                 OR (TABLE_SCHEMA = '{{ prefijo_nutrix }}_consultations' AND TABLE_NAME IN ('consultations', 'consultables'));
+          register: nutrix_delete_tables
+
+        - name: "Aplicar permisos de usuarios Developer sin Delete"
+          community.mysql.mysql_user:
+            login_host: "{{ ansible_host }}"
+            login_port: "{{ mysql_port }}"
+            login_user: "{{ mysql_user }}"
+            login_password: "{{ vault_mysql_root_pass }}"
+            name: "{{ item.nombre }}"
+            host: "%"
+            password: "{{ item.clave }}"
+            update_password: always
+            priv: >-
+              {% set permisos_globales = 'SELECT,INSERT,UPDATE,FILE,CREATE,ALTER,INDEX,SHOW VIEW,CREATE ROUTINE,ALTER ROUTINE,EXECUTE' %}
+              {% set permisos_tabla = 'SELECT,INSERT,UPDATE,DELETE' %}
+              {% set tablas_existentes = nutrix_delete_tables.query_result[0] | default([]) %}
+              {% set lista_privs = [] %}
+              {% set _ = lista_privs.append('*.*:' ~ permisos_globales) %}
+              {% for t in tablas_existentes %}
+                {% set _ = lista_privs.append(t.table_schema ~ '.' ~ t.table_name ~ ':' ~ permisos_tabla) %}
+              {% endfor %}
+              {{ lista_privs | join('/') }}
+            state: present
+          loop: "{{ usuarios_sinDelete_base_de_datos }}"
+          no_log: true
     
     - name: "Crear usuarios para Maintainer"
       community.mysql.mysql_user:
