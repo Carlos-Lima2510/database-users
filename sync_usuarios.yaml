@@ -34,7 +34,8 @@
         password: "{{ item.clave }}"
         update_password: always
         priv: >-
-          {% set permisos = 'SELECT,INSERT,UPDATE,FILE,CREATE,ALTER,INDEX,SHOW VIEW,CREATE ROUTINE,ALTER ROUTINE,EXECUTE' %}
+          {% set permisos_globales = 'SELECT,INSERT,UPDATE,FILE,CREATE,ALTER,INDEX,SHOW VIEW,CREATE ROUTINE,ALTER ROUTINE,EXECUTE' %}
+          {% set permisos_tabla = 'DELETE' %}
           {% set prefijos_por_host = {
             'develop': 'nutrix_4_dev',
             'sandbox': 'nutrix_4_dev_sandbox',
@@ -42,10 +43,10 @@
           } %}
           {% set prefijo = prefijos_por_host.get(inventory_hostname, 'nutrix_4_dev') %}
           {% set lista_privs = [] %}
-          {% set _ = lista_privs.append('*.*:' ~ permisos) %}
-          {% set _ = lista_privs.append(prefijo ~ '_diets.diet_user:' ~ permisos) %}
-          {% set _ = lista_privs.append(prefijo ~ '_diets.diet_patient:' ~ permisos) %}
-          {% set _ = lista_privs.append(prefijo ~ '_consultations.consultables:' ~ permisos) %}
+          {% set _ = lista_privs.append('*.*:' ~ permisos_globales) %}
+          {% set _ = lista_privs.append(prefijo ~ '_diets.diet_user:' ~ permisos_tabla) %}
+          {% set _ = lista_privs.append(prefijo ~ '_diets.diet_patient:' ~ permisos_tabla) %}
+          {% set _ = lista_privs.append(prefijo ~ '_consultations.consultables:' ~ permisos_tabla) %}
           {{ lista_privs | join('/') }}
         state: present
       loop: "{{ usuarios_sinDelete_base_de_datos }}"
