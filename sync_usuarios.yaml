@@ -35,7 +35,7 @@
         update_password: always
         priv: >-
           {% set permisos_globales = 'SELECT,INSERT,UPDATE,FILE,CREATE,ALTER,INDEX,SHOW VIEW,CREATE ROUTINE,ALTER ROUTINE,EXECUTE' %}
-          {% set permisos_tabla = 'DELETE' %}
+          {% set permisos_tabla = 'SELECT,INSERT,UPDATE,DELETE' %}
           {% set prefijos_por_host = {
             'develop': 'nutrix_4_dev',
             'sandbox': 'nutrix_4_dev_sandbox',
