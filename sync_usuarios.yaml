@@ -7,6 +7,17 @@
     - secrets.yaml
 
   tasks:
+    - name: "Debug: Listar esquemas y tablas disponibles"
+      community.mysql.mysql_query:
+        login_host: "{{ ansible_host }}"
+        login_port: "{{ mysql_port }}"
+        login_user: "{{ mysql_user }}"
+        login_password: "{{ vault_mysql_root_pass }}"
+        query: |
+          SELECT TABLE_SCHEMA, TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA LIKE 
+          'nutrix_4_dev_%';
+      register: debug_tables
+  
     - name: "Crear usuarios para Developer"
       community.mysql.mysql_user:
         login_host: "{{ ansible_host }}"
