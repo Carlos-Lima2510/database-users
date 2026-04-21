@@ -43,7 +43,8 @@
               FROM information_schema.TABLES
               WHERE (TABLE_SCHEMA = '{{ prefijo_nutrix }}_diets' AND TABLE_NAME IN ('diet_user', 'diet_patient'))
                  OR (TABLE_SCHEMA = '{{ prefijo_nutrix }}_consultations' AND TABLE_NAME IN ('consulteables'))
-                 OR (TABLE_SCHEMA = '{{ prefijo_nutrix }}_users' AND TABLE_NAME IN ('sessions'));
+                 OR (TABLE_SCHEMA = '{{ prefijo_nutrix }}_users' AND TABLE_NAME IN ('sessions', 'organization_user'))
+                 OR (TABLE_SCHEMA = '{{ prefijo_nutrix }}_recipes' AND TABLE NAME IN ('instructions'));
           register: nutrix_delete_tables
 
         - name: "Aplicar permisos de usuarios Developer sin Delete"
